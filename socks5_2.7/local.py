@@ -1,7 +1,7 @@
-__author__ = 'chenwei'
+#!/usr/bin/env python
 
 import sys
-import socketserver
+import SocketServer
 import struct
 import socket
 import select
@@ -10,7 +10,7 @@ import time
 
 PORT = 1081
 
-class ThreadingTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
+class ThreadingTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
     pass
 
 class Hosts():
@@ -18,27 +18,24 @@ class Hosts():
         self.hosts = hosts
         self.index = 0
     def get_host(self):
-        if len(self.hosts) == 0:
-            print('Sorry, you have no sock5 server alive now')
-            return None
         return self.hosts[0]
 
 hosts = Hosts()
+addr = Hosts()
 
-class Sock5Local(socketserver.StreamRequestHandler):
+class Sock5Local(SocketServer.StreamRequestHandler):
     def handle(self):
-        print ('[%s] socks connection from %s' % (time.ctime(), self.client_address))
+        print '[%s] socks connection from %s' % (time.ctime(), self.client_address)
         sock = self.connection
         try:
             addr = hosts.get_host()
             if not addr:
                 return
-
             remote = socket.create_connection(addr)
-            print ("[%s] connection to %s" % (time.ctime() ,addr[0]))
+            print "[%s] connection to %s" % (time.ctime() ,addr[0])
         except:
             #hosts.hosts.remove(addr)
-            print ('Socket error')
+            print 'Socket error'
             return
         self.handle_chat(sock, remote)
 
@@ -70,20 +67,18 @@ def main():
     try:
         hosts_ = simplejson.loads(hosts_str)['hosts']
     except simplejson.decoder.JSONDecodeError:
-        print ('Json format error')
+        print 'Json format error'
         return
 
     if not hosts_:
-        print ('file cfg.json is empty')
+        print 'file cfg.json is empty'
         return
     hosts.hosts = hosts_
-
-    print(hosts.hosts)
-    print(hosts.get_host())
-
     server = ThreadingTCPServer(('', PORT), Sock5Local)
-    print ('start local proxy at port {0}'.format(PORT))
+    print 'start local proxy at port {0}'.format(PORT)
     server.serve_forever()
 
 if __name__ == '__main__':
     main()
+
+
